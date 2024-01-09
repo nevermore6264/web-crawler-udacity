@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.regex.Pattern;
 
 public final class CrawlPageAction extends RecursiveAction {
@@ -64,8 +63,9 @@ public final class CrawlPageAction extends RecursiveAction {
                 }
             }
         }
-        List<CrawlPageAction> subtasks = new ArrayList<>();
-        for (String link : result.getLinks()) {
+        List<CrawlPageAction> crawlPageActions = new ArrayList<>();
+        for (int i = 0, linksSize = result.getLinks().size(); i < linksSize; i++) {
+            String link = result.getLinks().get(i);
             CrawlerPageBuilder crawlerPageBuilder = new CrawlerPageBuilder();
             crawlerPageBuilder
                     .setUrl(link)
@@ -77,16 +77,13 @@ public final class CrawlPageAction extends RecursiveAction {
                     .setIgnoredUrls(ignoredUrls)
                     .setParserFactory(parserFactory);
             CrawlPageAction newTask = crawlerPageBuilder.build();
-            subtasks.add(newTask);
+            crawlPageActions.add(newTask);
         }
-        for (CrawlPageAction subtask : subtasks) {
+        for (CrawlPageAction subtask : crawlPageActions) {
             try {
                 subtask.compute();
-            } catch (NullPointerException e) {
+            } catch (Exception e) {
                 System.out.println("One of sub-tasks is null");
-                e.printStackTrace();
-            } catch (RejectedExecutionException e) {
-                System.out.println("One of subtasks cannot be scheduled for execution");
                 e.printStackTrace();
             }
         }
