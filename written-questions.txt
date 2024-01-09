@@ -1,0 +1,114 @@
+Written Questions
+
+Q1. Run the web crawler using the configurations located at src/main/config/written_question_1a.json and
+    src/main/config/written_question_1b.json. The only difference between these configurations is that one always uses
+    the sequential crawler and the other always uses the parallel crawler. Inspect the profile output in
+    profileData.txt.
+
+    If you are using a multi-processor computer, you should notice that SequentialWebCrawler#crawl and
+    ParallelWebCrawler#crawl took about the same amount of time, but PageParserImpl#parse took much longer when run with
+    the ParallelWebCrawler.
+
+    Why did the parser take more time when run with ParallelWebCrawler?
+
+
+A1. According to output in my console, SequentialWebCrawler visited 7 URLs and ParallelWebCrawler - 58.
+    Parallel crawler managed to visit much more URLs and parser had to do more work. Parser is probably not
+    parallel, but sequential, so it took much longer to parse 58 URLs compared to just 7. Implementation of parser seems
+    to be out of scope of this project, and I didn't look at it.
+
+
+Q2. Your manager ran your crawler on her old personal computer, using the configurations from Q1, and she notices that
+    the sequential crawler actually outperforms the parallel crawler. She would like to know why.
+
+    (a) Suggest one reason why the sequential web crawler was able to read more web pages than the parallel crawler.
+        (Hint: Try setting "parallelism" to 1 in the JSON configs to simulate your manager's computer.)
+
+    (b) Suggest one scenario in which the parallel web crawler will almost certainly perform better than the sequential
+        crawler. Why will it perform better?
+
+
+A2. (a) Probably, manager's old PC has a CPU with just one core and consequently can't use multiple threads for a
+        process. When a multi-thread Java application runs with just one thread, it doesn't visit more URLs compared to
+        single-thread mode because additional threads are not available. Parallel implementation requires extra
+        computation time for:
+        - tracking memory allocated for the thread it has
+        - making system calls to the operating system trying to create additional threads
+        - tracking the thread
+        Since both sequential and parallel crawlers run during the same amount of time, parallel one may visit fewer
+        URLs.
+
+    (b) Such a scenario could be when CPU has 12 cores and the config for parallel crawler is set to use 12 threads.
+        Parallel crawler will perform better because it will be able to do up to 12 tasks (visiting URLs) in parallel.
+        So, it will visit more URLs and parser will collect more words from downloaded HTML files.
+
+
+Q3. Analyze your method profiler through the lens of Aspect Oriented Programming, by answering the following questions:
+
+    (a) What cross-cutting concern is being addressed by the Profiler class?
+
+    (b) What are the join points of the Profiler in the web crawler program?
+
+
+A3. (a) This class addresses performance profiling.
+
+    (b) Join points of the Profiler are invocations of methods defined in a class which is wrapped by ProfilerImpl class
+        implementing Profiler interface. Specifically for our program, join points are methods of classes implementing
+        WebCrawler interface, that is methods of ParallelWebCrawler and SequentialWebCrawler classes.
+
+
+Q4. Identify three (3) different design patterns used in this project, and explain which interfaces, classes, and/or
+    libraries use or implement those design patterns.
+
+    For each pattern, name one thing about the pattern that you LIKED, and one thing you DISLIKED. If you did not like
+    anything, you can name two things you disliked.
+
+
+A4. I can see this project using the following three design patterns: strategy, proxy and builder.
+
+    STRATEGY
+
+    This design pattern is used by WebCrawler interface, SequentialWebCrawler and ParallelWebCrawler classes.
+    WebCrawler interface defines a type of task. SequentialWebCrawler and ParallelWebCrawler classes are concrete
+    implementations which solve the task in different ways. Parallel crawler utilizes multi-threading and sequential
+    one doesn't. Callers of implementations code against WebCrawler interface and this allows swapping of
+    implementations.
+
+    I liked about strategy that it allowed swapping implementations of WebCrawler interface without changing Java
+    code of callers.
+
+    I didn't like about this design pattern that it required a lot of additional code in WebCrawlerModule to set up
+    dependency injection framework so that it injects the required implementation of web crawler.
+
+    PROXY
+
+    Profiler interface, ProfilerImpl and ProfilingMethodInterceptor classes implement proxy design pattern. ProfilerImpl
+    implements Profiler interface and wraps concrete implementation of WebCrawler interface, i.e. instance of
+    ParallelWebCrawler or of SequentialWebCrawler. ProfilingMethodInterceptor class handles invocations of the
+    wrapped object's method and controls, for which invocations performance profiling is called.
+    ProfilingMethodInterceptor gives ProfilingState class access to the delegate (instance of ParallelWebCrawler or
+    SequentialWebCrawler) if invocated method is marked with @Profiled annotation.
+
+    I like that proxy allows to completely separate implementation of crawler and profiling functionality. There is not
+    a single line of code in both sequential and parallel crawlers related to profiler and editing profiler won't
+    require editing crawlers.
+
+    I don't like about proxy that you have to handle exceptions thrown by invocated method carefully. I still have
+    little experience with exceptions and not sure that all edge cases are covered by my implementation of
+    ProfilingMethodInterceptor::invoke(). Also, using proxy requires a lot of additional code which involves working
+    with reflection API (not an easy to grasp concept).
+
+    BUILDER
+
+    This design pattern is used in CrawlPageAction (extends RecursiveAction) created by me and
+    CrawlerConfiguration classes. CrawlPageAction has nested Builder class which helps to set fields of the outer class
+    using builder's setters instead of feeding a long list of arguments directly into constructor of CrawlPageAction.
+    The builder is used in ParallelWebCrawler class to create initial task for the thread pool and in CrawlPageAction
+    when creating new sub-tasks.
+
+    I like that builder really serves its purpose and makes it easier to supply arguments when instantiating
+    CrawlPageAction class. Setters have descriptive names and chaining allows reducing code.
+
+    I dislike that when choosing default values for fields of CrawlPageAction.Builder I got a little confused. Often
+    I was not sure which value to pick and many don't really make sense. Actually, I never use those default values in
+    my code and should probably remove them and add a check that all values are set before building the builder.

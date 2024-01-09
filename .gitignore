@@ -1,0 +1,5 @@
+.idea/
+target/
+*.iml
+profileData.txt
+src/test/java/com/udacity/webcrawler/json/crawl-result.json
