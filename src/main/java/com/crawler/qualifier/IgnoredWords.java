@@ -1,4 +1,4 @@
-package com.crawler.profiler;
+package com.crawler.qualifier;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.Retention;

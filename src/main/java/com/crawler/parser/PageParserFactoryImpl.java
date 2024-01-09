@@ -1,6 +1,6 @@
 package com.crawler.parser;
 
-import com.crawler.profiler.IgnoredWords;
+import com.crawler.qualifier.IgnoredWords;
 import com.crawler.qualifier.Timeout;
 import com.crawler.profiler.Profiler;
 
