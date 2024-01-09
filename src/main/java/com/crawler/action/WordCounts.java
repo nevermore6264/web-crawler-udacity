@@ -5,7 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-final class WordCounts {
+public final class WordCounts {
 
     private WordCounts() {
     }

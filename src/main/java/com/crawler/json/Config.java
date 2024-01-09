@@ -22,9 +22,9 @@ public final class Config {
     private static CrawlerConfig read(Reader reader) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.disable(JsonParser.Feature.AUTO_CLOSE_SOURCE);
-        Builder config = null;
+        CrawlerConfigBuilder config = null;
         try {
-            config = objectMapper.readValue(reader, Builder.class);
+            config = objectMapper.readValue(reader, CrawlerConfigBuilder.class);
         } catch (Exception e) {
             e.printStackTrace();
         }

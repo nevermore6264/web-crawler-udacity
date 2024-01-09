@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public final class Builder {
+public final class CrawlerConfigBuilder {
     private final Set<String> startPages = new LinkedHashSet<>();
     private final Set<String> ignoredUrls = new LinkedHashSet<>();
     private final Set<String> ignoredWords = new LinkedHashSet<>();
@@ -22,7 +22,7 @@ public final class Builder {
     private String resultPath = "";
 
     @JsonProperty("startPages")
-    public Builder addStartPages(String... startPages) {
+    public CrawlerConfigBuilder addStartPages(String... startPages) {
         for (String startPage : startPages) {
             this.startPages.add(Objects.requireNonNull(startPage));
         }
@@ -30,7 +30,7 @@ public final class Builder {
     }
 
     @JsonProperty("ignoredUrls")
-    public Builder addIgnoredUrls(String... patterns) {
+    public CrawlerConfigBuilder addIgnoredUrls(String... patterns) {
         for (String pattern : patterns) {
             ignoredUrls.add(Objects.requireNonNull(pattern));
         }
@@ -38,7 +38,7 @@ public final class Builder {
     }
 
     @JsonProperty("ignoredWords")
-    public Builder addIgnoredWords(String... patterns) {
+    public CrawlerConfigBuilder addIgnoredWords(String... patterns) {
         for (String pattern : patterns) {
             ignoredWords.add(Objects.requireNonNull(pattern));
         }
@@ -46,43 +46,43 @@ public final class Builder {
     }
 
     @JsonProperty("parallelism")
-    public Builder setParallelism(int parallelism) {
+    public CrawlerConfigBuilder setParallelism(int parallelism) {
         this.parallelism = parallelism;
         return this;
     }
 
     @JsonProperty("implementationOverride")
-    public Builder setImplementationOverride(String implementationOverride) {
+    public CrawlerConfigBuilder setImplementationOverride(String implementationOverride) {
         this.implementationOverride = Objects.requireNonNull(implementationOverride);
         return this;
     }
 
     @JsonProperty("maxDepth")
-    public Builder setMaxDepth(int maxDepth) {
+    public CrawlerConfigBuilder setMaxDepth(int maxDepth) {
         this.maxDepth = maxDepth;
         return this;
     }
 
     @JsonProperty("timeoutSeconds")
-    public Builder setTimeoutSeconds(int seconds) {
+    public CrawlerConfigBuilder setTimeoutSeconds(int seconds) {
         this.timeoutSeconds = seconds;
         return this;
     }
 
     @JsonProperty("popularWordCount")
-    public Builder setPopularWordCount(int popularWordCount) {
+    public CrawlerConfigBuilder setPopularWordCount(int popularWordCount) {
         this.popularWordCount = popularWordCount;
         return this;
     }
 
     @JsonProperty("profileOutputPath")
-    public Builder setProfileOutputPath(String profileOutputPath) {
+    public CrawlerConfigBuilder setProfileOutputPath(String profileOutputPath) {
         this.profileOutputPath = Objects.requireNonNull(profileOutputPath);
         return this;
     }
 
     @JsonProperty("resultPath")
-    public Builder setResultPath(String resultPath) {
+    public CrawlerConfigBuilder setResultPath(String resultPath) {
         this.resultPath = Objects.requireNonNull(resultPath);
         return this;
     }

@@ -4,6 +4,7 @@ import com.crawler.json.CrawlerConfig;
 import com.crawler.parser.ParserModule;
 import com.crawler.profiler.Profiler;
 import com.crawler.qualifier.IgnoredUrls;
+import com.crawler.qualifier.Internal;
 import com.crawler.qualifier.MaxDepth;
 import com.crawler.qualifier.PopularWordCount;
 import com.crawler.qualifier.TargetParallelism;
@@ -14,10 +15,7 @@ import com.google.inject.Provides;
 import com.google.inject.ProvisionException;
 import com.google.inject.multibindings.Multibinder;
 
-import javax.inject.Qualifier;
 import javax.inject.Singleton;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
@@ -62,20 +60,20 @@ public final class WebCrawlerModule extends AbstractModule {
             @TargetParallelism int targetParallelism) {
         String override = config.getImplementationOverride();
         if (!override.isEmpty()) {
-            return implementations
-                    .stream()
-                    .filter(impl -> impl.getClass().getName().equals(override))
-                    .findFirst()
-                    .orElseThrow(() -> new ProvisionException("Implementation not found: " + override));
+            for (WebCrawler impl : implementations) {
+                if (impl.getClass().getName().equals(override)) {
+                    return impl;
+                }
+            }
+            throw new ProvisionException("Implementation not found: " + override);
         }
-        return implementations
-                .stream()
-                .filter(impl -> targetParallelism <= impl.getMaxParallelism())
-                .findFirst()
-                .orElseThrow(
-                        () -> new ProvisionException(
-                                "No implementation able to handle parallelism = \"" +
-                                        config.getParallelism() + "\"."));
+        for (WebCrawler impl : implementations) {
+            if (targetParallelism <= impl.getMaxParallelism()) {
+                return impl;
+            }
+        }
+        throw new ProvisionException("No implementation able to handle parallelism = \"" +
+                config.getParallelism() + "\".");
     }
 
     @Provides
@@ -92,10 +90,5 @@ public final class WebCrawlerModule extends AbstractModule {
     @Singleton
     WebCrawler provideWebCrawlerProxy(Profiler wrapper, @Internal WebCrawler delegate) {
         return wrapper.wrap(WebCrawler.class, delegate);
-    }
-
-    @Qualifier
-    @Retention(RetentionPolicy.RUNTIME)
-    private @interface Internal {
     }
 }

@@ -1,6 +1,7 @@
 package com.crawler.action;
 
 import com.crawler.json.CrawlResult;
+import com.crawler.json.CrawlResultBuilder;
 import com.crawler.parser.PageParser;
 import com.crawler.parser.PageParserFactory;
 import com.crawler.qualifier.IgnoredUrls;
@@ -19,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-final class SequentialWebCrawler implements WebCrawler {
+public final class SequentialWebCrawler implements WebCrawler {
 
     private final Clock clock;
     private final PageParserFactory parserFactory;
@@ -54,16 +55,17 @@ final class SequentialWebCrawler implements WebCrawler {
         }
 
         if (counts.isEmpty()) {
-            return new CrawlResult.Builder()
-                    .setWordCounts(counts)
-                    .setUrlsVisited(visitedUrls.size())
-                    .build();
+            CrawlResultBuilder crawlResultBuilder = new CrawlResultBuilder();
+            crawlResultBuilder.setWordCounts(counts);
+            crawlResultBuilder.setUrlsVisited(visitedUrls.size());
+            return crawlResultBuilder.build();
         }
 
-        return new CrawlResult.Builder()
-                .setWordCounts(WordCounts.sort(counts, popularWordCount))
-                .setUrlsVisited(visitedUrls.size())
-                .build();
+        CrawlResultBuilder crawlResultBuilder = new CrawlResultBuilder();
+        crawlResultBuilder.setWordCounts(WordCounts.sort(counts, popularWordCount));
+        crawlResultBuilder.setUrlsVisited(visitedUrls.size());
+
+        return crawlResultBuilder.build();
     }
 
     private void crawlInternal(
@@ -86,10 +88,12 @@ final class SequentialWebCrawler implements WebCrawler {
         visitedUrls.add(url);
         PageParser.Result result = parserFactory.get(url).parse();
         for (Map.Entry<String, Integer> e : result.getWordCounts().entrySet()) {
-            if (counts.containsKey(e.getKey())) {
-                counts.put(e.getKey(), e.getValue() + counts.get(e.getKey()));
+            String key = e.getKey();
+            Integer value = e.getValue();
+            if (counts.containsKey(key)) {
+                counts.put(key, value + counts.get(key));
             } else {
-                counts.put(e.getKey(), e.getValue());
+                counts.put(key, value);
             }
         }
         for (String link : result.getLinks()) {

@@ -6,7 +6,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.regex.Pattern;
 
-@JsonDeserialize(builder = Builder.class)
+@JsonDeserialize(builder = CrawlerConfigBuilder.class)
 public final class CrawlerConfig {
 
     private final List<String> startPages;

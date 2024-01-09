@@ -1,6 +1,7 @@
 package com.crawler.action;
 
 import com.crawler.json.CrawlResult;
+import com.crawler.json.CrawlResultBuilder;
 import com.crawler.parser.PageParserFactory;
 import com.crawler.qualifier.IgnoredUrls;
 import com.crawler.qualifier.MaxDepth;
@@ -21,10 +22,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.regex.Pattern;
 
-/**
- * A concrete implementation of {@link WebCrawler} that runs multiple threads on a
- * {@link ForkJoinPool} to fetch and process multiple web pages in parallel.
- */
 public final class ParallelWebCrawler implements WebCrawler {
     private final Clock clock;
     private final PageParserFactory parserFactory;
@@ -55,12 +52,10 @@ public final class ParallelWebCrawler implements WebCrawler {
     @Override
     public CrawlResult crawl(List<String> startingUrls) {
         Instant deadline = clock.instant().plus(timeout);
-        // Define concurrent data structures for counting of words and visited URLs
         Map<String, Integer> counts = new ConcurrentHashMap<>();
         Set<String> visitedUrls = Collections.synchronizedSet(new HashSet<>());
-        // Create initial tasks for each starting URL
         for (String url : startingUrls) {
-            var taskBuilder = new CrawlPageAction.Builder()
+            CrawlPageAction.Builder taskBuilder = new CrawlPageAction.Builder()
                     .setUrl(url)
                     .setDeadline(deadline)
                     .setMaxDepth(maxDepth)
@@ -75,16 +70,16 @@ public final class ParallelWebCrawler implements WebCrawler {
         pool.shutdown();
 
         if (counts.isEmpty()) {
-            return new CrawlResult.Builder()
-                    .setWordCounts(counts)
-                    .setUrlsVisited(visitedUrls.size())
-                    .build();
+            CrawlResultBuilder crawlResultBuilder = new CrawlResultBuilder();
+            crawlResultBuilder.setWordCounts(counts);
+            crawlResultBuilder.setUrlsVisited(visitedUrls.size());
+            return crawlResultBuilder.build();
         }
 
-        return new CrawlResult.Builder()
-                .setWordCounts(WordCounts.sort(counts, popularWordCount))
-                .setUrlsVisited(visitedUrls.size())
-                .build();
+        CrawlResultBuilder crawlResultBuilder = new CrawlResultBuilder();
+        crawlResultBuilder.setWordCounts(WordCounts.sort(counts, popularWordCount));
+        crawlResultBuilder.setUrlsVisited(visitedUrls.size());
+        return crawlResultBuilder.build();
     }
 
     @Override
