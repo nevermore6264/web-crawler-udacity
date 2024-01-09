@@ -3,7 +3,6 @@ package com.crawler.profiler;
 import com.crawler.qualifier.Profiled;
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Clock;
 import java.time.Duration;

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -25,12 +26,17 @@ final class ProfilingState {
     }
 
     void write(Writer writer) throws IOException {
+        List<Map.Entry<String, Duration>> toSort = new ArrayList<>();
+        for (Map.Entry<String, Duration> e : data.entrySet()) {
+            toSort.add(e);
+        }
+        toSort.sort(Map.Entry.comparingByKey());
         List<String> entries =
-                data.entrySet()
-                        .stream()
-                        .sorted(Map.Entry.comparingByKey())
-                        .map(e -> e.getKey() + " took " + formatDuration(e.getValue()) + System.lineSeparator())
-                        .collect(Collectors.toList());
+                new ArrayList<>();
+        for (Map.Entry<String, Duration> e : toSort) {
+            String s = e.getKey() + " took " + formatDuration(e.getValue()) + System.lineSeparator();
+            entries.add(s);
+        }
         for (String entry : entries) {
             writer.write(entry);
         }
