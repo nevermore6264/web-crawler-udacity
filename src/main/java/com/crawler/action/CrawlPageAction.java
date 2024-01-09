@@ -14,7 +14,7 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.regex.Pattern;
 
-public class CrawlPageAction extends RecursiveAction {
+public final class CrawlPageAction extends RecursiveAction {
     private final String url;
     private final Instant deadline;
     private final int maxDepth;
@@ -23,9 +23,6 @@ public class CrawlPageAction extends RecursiveAction {
     private final Clock clock;
     private final List<Pattern> ignoredUrls;
     private final PageParserFactory parserFactory;
-
-    public CrawlPageAction() {
-    }
 
     public CrawlPageAction(String url, Instant deadline, int maxDepth,
                            Map<String, Integer> counts, Set<String> visitedUrls, Clock clock,
